@@ -77,7 +77,7 @@ bool checkSLAMTECLIDARHealth(ILidarDriver * drv)
         if (healthinfo.status == SL_LIDAR_STATUS_ERROR) {
             fprintf(stderr, "Error, slamtec lidar internal error detected. Please reboot the device to retry.\n");
             // enable the following code if you want slamtec lidar to be reboot by software
-            // drv->reset();
+            drv->reset();
             return false;
         } else {
             return true;
@@ -99,6 +99,7 @@ void ctrlc(int)
 ILidarDriver * drv;
 sl_result op_result;
 int opt_channel_type;
+int done;
 
 
 int s2(int argc, const char * argv[]) {
@@ -262,9 +263,19 @@ int s2(int argc, const char * argv[]) {
 
 
     // check health...
-    if (!checkSLAMTECLIDARHealth(drv)) {
-        goto on_finished;
+    done = 0;
+    for (int i = 0; i < 10; i++) {
+        std::cout << "reset\n";
+    	if (checkSLAMTECLIDARHealth(drv)) {
+            done = 1;
+            break;
+    	}
     }
+    if (!done) {
+       goto on_finished;
+    }
+    
+    
 
     signal(SIGINT, ctrlc);
 
@@ -302,6 +313,7 @@ int s2(int argc, const char * argv[]) {
 //        drv->setMotorSpeed(0);
     // done!
     on_finished:
+    std::cout << "!!!on_finished!!!\n";
     if(drv) {
         delete drv;
         drv = NULL;
@@ -310,12 +322,14 @@ int s2(int argc, const char * argv[]) {
 }
 
 
-int s2Init() {
-    const char* argv[]= {"./ultra_simple", "--channel", "--serial", "/dev/ttyUSB0", "1000000"};
+int s2Init(const char* serialPortName) {
+    const char* argv[]= {"./ultra_simple", "--channel", "--serial", serialPortName, "1000000"};
     std::cout << "s2Init: started\n";
     return s2(2, argv);
 }
 
+
+int isHealthOk = 1;
 
 boost::python::list s2GetScan() {
     sl_lidar_response_measurement_node_hq_t nodes[8192];
@@ -324,9 +338,12 @@ boost::python::list s2GetScan() {
     boost::python::list scan;
 
     op_result = drv->grabScanDataHq(nodes, count);
+    printf("op_result: %X\n", op_result);
+    
 
-    if (SL_IS_OK(op_result)) {
+    if (SL_IS_OK(op_result) | isHealthOk) {
         drv->ascendScanData(nodes, count);
+        std::cout << "ascendScanData count:" << (int)count << "\n";
         for (int pos = 0; pos < (int)count ; ++pos) {
             printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
                    (nodes[pos].flag & SL_LIDAR_RESP_HQ_FLAG_SYNCBIT) ?"S ":"  ",
@@ -339,7 +356,25 @@ boost::python::list s2GetScan() {
             temp.append(nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
             scan.append(temp);
         }
-    }
+    } else {
+    	std::cout << "SL_IS_NOT_OK\n";
+    	// checkSLAMTECLIDARHealth(drv);
+    	
+    	done = 0;
+	for (int i = 0; i < 10; i++) {
+		if (checkSLAMTECLIDARHealth(drv)) {
+	    		done = 1;
+	    		break;
+		}
+		std::cout << "reset\n";
+	}
+	if (!done) {
+		printf("cannot reset");
+		// goto on_finished;
+	}
+    } 
+    
+    
 
     return scan;
 }
