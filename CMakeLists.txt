@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 
 project(py_rplidar_sdk)
 
+set(CMAKE_CXX_STANDARD 14)
+add_definitions(-D_MACOS)
+
 # Find python and Boost - both are required dependencies
 find_package(PythonLibs 3.8 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
@@ -13,9 +16,9 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 # - This is where you add the source files
 add_library(s2lidar MODULE s2lidar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/sl_lidar_driver.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/arch/linux/timer.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/arch/linux/net_serial.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/arch/linux/net_socket.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/arch/macOS/timer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/arch/macOS/net_serial.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/arch/macOS/net_socket.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/hal/thread.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/sl_crc.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/rplidar_sdk/sdk/src/sl_serial_channel.cpp
