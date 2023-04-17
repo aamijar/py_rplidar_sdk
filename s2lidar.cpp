@@ -338,18 +338,18 @@ boost::python::list s2GetScan() {
     boost::python::list scan;
 
     op_result = drv->grabScanDataHq(nodes, count);
-    printf("op_result: %X\n", op_result);
+    // printf("op_result: %X\n", op_result);
     
 
     if (SL_IS_OK(op_result) | isHealthOk) {
         drv->ascendScanData(nodes, count);
-        std::cout << "ascendScanData count:" << (int)count << "\n";
+        // std::cout << "ascendScanData count:" << (int)count << "\n";
         for (int pos = 0; pos < (int)count ; ++pos) {
-            printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
-                   (nodes[pos].flag & SL_LIDAR_RESP_HQ_FLAG_SYNCBIT) ?"S ":"  ",
-                   (nodes[pos].angle_z_q14 * 90.f) / 16384.f,
-                   nodes[pos].dist_mm_q2/4.0f,
-                   nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
+            // printf("%s theta: %03.2f Dist: %08.2f Q: %d \n",
+            //        (nodes[pos].flag & SL_LIDAR_RESP_HQ_FLAG_SYNCBIT) ?"S ":"  ",
+            //        (nodes[pos].angle_z_q14 * 90.f) / 16384.f,
+            //        nodes[pos].dist_mm_q2/4.0f,
+            //        nodes[pos].quality >> SL_LIDAR_RESP_MEASUREMENT_QUALITY_SHIFT);
             boost::python::list temp;
             temp.append((nodes[pos].angle_z_q14 * 90.f) / 16384.f);
             temp.append(nodes[pos].dist_mm_q2/4.0f);
